@@ -1,0 +1,61 @@
+<modification>
+	<id>GeoIP</id>
+	<version>1.0.0</version>
+	<vqmver>2.3.0</vqmver>
+	<author>Alex</author>
+	<file name="admin/controller/setting/setting.php">
+		<operation error="abort">
+			<search position="after"><![CDATA[
+			$this->data['entry_maintenance'] = $this->language->get('entry_maintenance');
+			]]></search>
+			<add><![CDATA[
+			$this->data['entry_geo'] = $this->language->get('entry_geo');
+			]]></add>
+		</operation>
+		<operation error="abort">
+			<search position="before"><![CDATA[
+			if (isset($this->request->post['config_encryption'])) {
+			]]></search>
+			<add><![CDATA[
+			if (isset($this->request->post['config_geo'])) {
+			$this->data['config_geo'] = $this->request->post['config_geo'];
+			} else {
+			$this->data['config_geo'] = $this->config->get('config_geo');
+			}
+			]]></add>
+		</operation>
+	</file>
+	<file name="admin/language/russian/setting/setting.php">
+		<operation error="abort">
+			<search position="before"><![CDATA[
+			$_['entry_encryption']
+			]]></search>
+			<add><![CDATA[
+			$_['entry_geo']        = 'GEO:<br /><span class="help">Автоматическое определение города посетителя.</span>';
+			]]></add>
+		</operation>
+	</file>
+	<file name="admin/view/template/setting/setting.tpl">
+		<operation error="abort">
+			<search position="before" offset="1"><![CDATA[
+              		<td><?php echo $entry_encryption; ?></td>
+              		]]></search>
+			<add><![CDATA[
+		      <tr>
+	              <td><?php echo $entry_geo; ?></td>
+	              <td><?php if ($config_geo) { ?>
+	                <input type="radio" name="config_geo" value="1" checked="checked" />
+	                <?php echo $text_yes; ?>
+	                <input type="radio" name="config_geo" value="0" />
+	                <?php echo $text_no; ?>
+	                <?php } else { ?>
+	                <input type="radio" name="config_geo" value="1" />
+	                <?php echo $text_yes; ?>
+	                <input type="radio" name="config_geo" value="0" checked="checked" />
+	                <?php echo $text_no; ?>
+	                <?php } ?></td>
+	                </tr>
+			]]></add>
+		</operation>
+	</file>
+</modification>

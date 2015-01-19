@@ -1,0 +1,192 @@
+<modification>
+	<id>Заказ в один клик</id>
+	<version>1</version>
+	<vqmver>1.0.0</vqmver>
+	<author>freelancer, VQMod - rmonax</author>
+
+	<file name="catalog/controller/product/product.php">
+		<operation>
+            <search position="after"><![CDATA[
+ 			$this->data['text_wait'] = $this->language->get('text_wait');
+            ]]></search>
+            <add><![CDATA[
+			$this->data['text_wait_oneclick'] = $this->language->get('text_wait_oneclick');
+            ]]></add>
+        </operation>
+	</file>
+
+	<file name="catalog/language/english/english.php">
+		<operation>
+            <search position="after"><![CDATA[
+ 			$_['button_quote']
+            ]]></search>
+            <add><![CDATA[
+$_['text_order_one_click']   = 'Buy';
+$_['text_wait_oneclick']         = 'Please wait, order dispatch...';
+$_['text_one_click']         = 'Buy one click';
+$_['text_one_click_wrong']   = 'Wrong number format. Telephone must be between 3 and 32 characters!';
+$_['text_one_click_firstname']  = 'Buy one click (%s)';
+            ]]></add>
+        </operation>
+	</file>
+	
+	
+	<file name="catalog/language/russian/russian.php">
+		<operation>
+            <search position="after"><![CDATA[
+ 			$_['button_quote']
+            ]]></search>
+            <add><![CDATA[
+$_['text_order_one_click']   = 'Заказать';
+$_['text_wait_oneclick']         = 'Подождите, идёт отправка заказа...';
+$_['text_one_click']         = 'Отправить заказ';
+$_['text_one_click_wrong']   = 'Номер телефона может содержать только цифры!';
+$_['text_one_click_firstname']  = 'Заказ в 1 клик (%s)';
+            ]]></add>
+        </operation>
+	</file>
+
+	<file name="catalog/view/theme/magnetoplan/template/product/product.tpl">
+	    <operation>
+            <search position="before"><![CDATA[
+ 			<?php if ($review_status) { ?>
+            ]]></search>
+            <add><![CDATA[
+			  <div id="oneclick_form" class="ui-draggable" style="border-radius: 10px 10px 10px 10px; display: none;">
+
+	<table class="oneclick_header" style="border-radius: 5px 5px 5px 5px;">
+		<tbody><tr>
+			<td style="text-align: center">
+				<span class="big_title">Быстрый заказ
+			
+				<a style="float: right; padding: 5px 10px 0 0" onclick="oneclick_close();" class="oneclick_close" href="javascript:void(0);"><img title="Закрыть" src="catalog/view/theme/magnetoplan/image/cancel.png"></a></span>
+			</td>
+		</tr>
+	</tbody></table>
+
+		<table class="form_table_oneclick">
+			<tbody>
+			<span id="oneclick_notification"></span>		
+			<tr>
+				<span class="phone_error"></span>
+				<td class="td_oneclick_caption">Телефон:</td>
+				<td><input type="text" id="one_click_phone" name="phone"></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td><a class="btn" id="button-oneclick"><?php echo $this->language->get('text_one_click'); ?></a></td>
+			</tr>
+		</tbody></table>
+	</form>
+</div>
+<script>
+	function oneclick_close(){
+		$('#oneclick_form').hide();
+		$('.success, .attention, .warning').remove();
+		$('#button-oneclick').show();
+		return false;
+	}
+
+	 $('.oneclick, .option_oneclick').bind('click', function() {
+        margin_top = -$('#oneclick_form').height()/2;
+        margin_left= -$('#oneclick_form').width()/2;
+        $('#oneclick_form').css({'margin-left': margin_left, 'margin-top': margin_top });
+		$('#oneclick_form').show();
+
+		$('#oneclick_ajax_form').show();
+
+		return false;
+	});
+
+</script>
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search position="after"><![CDATA[<?php echo $content_bottom; ?>]]>
+            </search>
+            <add><![CDATA[
+<?php if ($options) { ?>
+                <script type="text/javascript">
+                <!--
+                var	intRegex = /[0-9 -()+]+$/;
+
+                $('#button-oneclick').bind('click', function() {
+                    var product_info = $(this).parents('.product-info');
+                    product_info.find('.phone_error').html('');
+                    phone = product_info.find('input[name="phone"]').val();
+                    if((phone.length < 4) || (!intRegex.test(phone))){
+                        product_info.find('#oneclick_notification').html('<div class="warning"><?php echo $this->language->get('text_one_click_wrong'); ?></div>');
+                        return;
+                    }
+			po_value_id = $('input[name=\'optvalue\']').attr('value');
+                    $.ajax({
+                        url: 'index.php?route=module/oneclick/order',
+                        type: 'post',
+                        data: $('#option_'+po_value_id).serialize() + '&phone=' + $('input[name=\'phone\']').attr('value'),
+                        dataType: 'json',
+			beforeSend: function() {
+			$('.success, .warning').remove();
+			$('#button-oneclick').hide();
+			$('#oneclick_notification').html('<div class="attention"><img src="catalog/view/theme/magnetoplan/image/loading.gif" alt="" /> <?php echo $text_wait_oneclick; ?></div>');
+		},
+                        success: function(json) {
+                            $('#oneclick_notification').html('<div class="success" style="display: none;">' + json + '</div>');
+                            $('.success').fadeIn('slow');
+                            $('html, body').animate({ scrollTop: 0 }, 'slow');
+                        }
+                    });
+                });
+                //--></script>
+<?php } else { ?>
+	<script type="text/javascript">
+                <!--
+                var	intRegex = /[0-9 -()+]+$/;
+
+                $('#button-oneclick').bind('click', function() {
+                    var product_info = $(this).parents('.product-info');
+                    product_info.find('.phone_error').html('');
+                    phone = product_info.find('input[name="phone"]').val();
+                    if((phone.length < 4) || (!intRegex.test(phone))){
+                        product_info.find('#oneclick_notification').html('<div class="warning"><?php echo $this->language->get('text_one_click_wrong'); ?></div>');
+                        return;
+                    }
+po_value_id = $('input[name=\'optvalue\']').attr('value');
+                    $.ajax({
+                        url: 'index.php?route=module/oneclick/order',
+                        type: 'post',
+                       data: $('.product-info input[type=\'text\'], .product-info input[name=\'phone\'], .product-info input[type=\'hidden\'], .product-info input[type=\'radio\']:checked, .product-info input[type=\'checkbox\']:checked, .product-info select, .product-info textarea'),
+                        dataType: 'json',
+			beforeSend: function() {
+			$('.success, .warning').remove();
+			$('#button-oneclick').hide();
+			$('#oneclick_notification').html('<div class="attention"><img src="catalog/view/theme/magnetoplan/image/loading.gif" alt="" /> <?php echo $text_wait_oneclick; ?></div>');
+		},
+                        success: function(json) {
+                            $('#oneclick_notification').html('<div class="success" style="display: none;">' + json + '</div>');
+                            $('.success').fadeIn('slow');
+                        }
+                    });
+                });
+                //--></script>
+<?php } ?>
+<script type="text/javascript"><!--
+function addToOrderOption(optvalue) {
+	$('input[name=\'optvalue\']').val(optvalue);
+}
+//--></script>
+
+]]></add>
+        </operation>
+
+	</file>
+	
+    <file name="catalog/model/checkout/order.php">
+        <operation>
+            <search position="after" index="2"><![CDATA[				$text .= $language->get('text_new_order_id') . ' ' . $order_id . "\n";]]></search>
+            <add>
+                $text .= $language->get('text_new_telephone') . ' ' . $order_info['telephone'] . "\n";
+            </add>
+    </operation>
+    </file>
+</modification>

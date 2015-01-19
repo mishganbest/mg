@@ -1,0 +1,176 @@
+<modification>
+	<id>Video Product Page</id>
+	<version>1.0</version>
+	<vqmver>2.3.0</vqmver>
+	<author>Alex</author>
+	<file name="admin/controller/catalog/product.php">
+        <operation>
+            <search position="after"><![CDATA[
+            $this->data['entry_image'] = $this->language->get('entry_image');
+            ]]></search>
+            <add><![CDATA[$this->data['entry_video'] = $this->language->get('entry_video');]]></add>
+        </operation>
+        <operation>
+            <search position="after" index="1"><![CDATA[
+            'image'      => $image,
+            ]]></search>
+            <add><![CDATA['video'      => $result['video'],]]></add>
+        </operation>
+        <operation>
+            <search position="after" offset="1"><![CDATA[
+           $this->data['error_model'] = '';
+            ]]></search>
+            <add><![CDATA[if (isset($this->error['video'])) {
+			$this->data['error_video'] = $this->error['video'];
+		} else {
+			$this->data['error_video'] = '';
+		}]]></add>
+        </operation>
+	<operation>
+            <search position="after" offset="6"><![CDATA[
+          if (isset($this->request->post['image'])) {
+            ]]></search>
+            <add><![CDATA[
+		if (isset($this->request->post['video'])) {
+			$this->data['video'] = $this->request->post['video'];
+		} elseif (!empty($product_info)) {
+			$this->data['video'] = $product_info['video'];
+		} else {
+			$this->data['video'] = '';
+		}
+	]]></add>
+        </operation>
+	<operation>
+            <search position="after" offset="1"><![CDATA[
+           $this->error['model'] = $this->language->get('error_model');
+            ]]></search>
+            <add><![CDATA[if (!empty($this->request->post['video']) && preg_match("/http:/i", $this->request->post['video'])) { 
+	      		$this->error['video'] = $this->language->get('error_video');
+	      	}]]></add>
+        </operation>
+	</file>
+
+	<file name="admin/language/russian/catalog/product.php">
+        <operation>
+            <search position="before"><![CDATA[
+            $_['entry_image']
+            ]]></search>
+            <add><![CDATA[$_['entry_video']     	= 'YouTube:<br/><span class="help">Идентификатор видео.<br /> Пример: Hr78afGJeU</span>';]]></add>
+        </operation>
+        <operation>
+            <search position="before"><![CDATA[
+            $_['error_model']
+            ]]></search>
+            <add><![CDATA[
+		$_['error_video']       	= 'Ошибка! Укажите только идентификатор видео!';
+		]]></add>
+        </operation>
+	</file>
+
+	<file name="admin/model/catalog/product.php">
+        <operation>
+            <search position="after" offset="2"><![CDATA[
+          if (isset($data['image'])) {
+            ]]></search>
+            <add><![CDATA[
+		if (isset($data['video'])) {
+			$this->db->query("UPDATE " . DB_PREFIX . "product SET video = '" . $this->db->escape(html_entity_decode($data['video'], ENT_QUOTES, 'UTF-8')) . "' WHERE product_id = '" . (int)$product_id . "'");
+		}
+		]]></add>
+        </operation>
+	</file>
+	<file name="admin/view/template/catalog/product_form.tpl">
+        <operation>
+            <search position="after" offset="1"><![CDATA[
+            $('#image').attr('value', '');"><?php echo $text_clear; ?></a></div></td>
+            ]]></search>
+            <add><![CDATA[
+		<tr>
+             <td><?php echo $entry_video ?></td>
+	     <td><input type="text" id="video" name="video" value="<?php echo $video; ?>" onchange="video_preview()" /><br />
+	     <span id="video_atach">
+	     <?php if ($video) { ?>
+	     <img id="thumb_v" style="width: 120px" src="http://img.youtube.com/vi/<?php echo $video; ?>/default.jpg">
+	     <?php } ?>
+	     <?php if (isset($error_video)) { ?>
+    	              <span class="error"><?php echo $error_video; ?></span>
+    	     <?php } ?>
+	     </span>
+	     </td>
+          </tr>
+	]]></add>
+        </operation>
+        <operation>
+            <search position="before"><![CDATA[
+            <script type="text/javascript" src="view/javascript/jquery/ui/jquery-ui-timepicker-addon.js"></script>
+            ]]></search>
+            <add><![CDATA[
+		<script type="text/javascript"><!--
+function video_preview() {
+   var v_thumb = $('#video').val(); 
+   if (v_thumb) {
+   $('#video_atach').show().html('<img style="width: 120px" src="http://img.youtube.com/vi/' + v_thumb + '/default.jpg">');
+   } else {
+   $('#video_atach').hide();
+   }
+}
+//--></script>
+	]]></add>
+        </operation>
+	</file>
+
+	<file name="catalog/controller/product/product.php">
+        <operation>
+            <search position="after"><![CDATA[
+            $this->data['points'] = $product_info['points'];
+            ]]></search>
+            <add><![CDATA[
+		$this->data['video'] = $product_info['video'];
+	]]></add>
+        </operation>
+        <operation>
+            <search position="after"><![CDATA[
+            $this->data['tab_related'] = $this->language->get('tab_related');
+            ]]></search>
+            <add><![CDATA[
+		$this->data['tab_video'] = $this->language->get('tab_video');
+	]]></add>
+        </operation>
+	</file>
+
+	<file name="catalog/language/russian/product/product.php">
+        <operation>
+            <search position="before"><![CDATA[
+            $_['tab_related']
+            ]]></search>
+            <add><![CDATA[
+		$_['tab_video']   = 'Видео';
+	]]></add>
+        </operation>
+	</file>
+
+	<file name="catalog/model/catalog/product.php">
+        <operation>
+            <search position="after"><![CDATA[
+            'image'            => $query->row['image'],
+            ]]></search>
+            <add><![CDATA[
+		'video'            => $query->row['video'],
+	]]></add>
+        </operation>
+	</file>
+
+	<file name="catalog/view/theme/magnetoplan/template/product/product.tpl">
+        <operation>
+            <search position="after" offset="3"><![CDATA[
+            <!-- AddThis Button END -->
+            ]]></search>
+            <add><![CDATA[
+		<?php if ($video) { ?>
+		<div class="video"><iframe width="490" height="276" src="//www.youtube.com/embed/<?php echo $video; ?>?rel=0&amp;wmode=opaque" frameborder="0" allowfullscreen></iframe></div>
+<?php } ?>
+	]]></add>
+        </operation>
+	</file>
+
+</modification>

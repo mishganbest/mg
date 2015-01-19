@@ -1,0 +1,86 @@
+<modification>
+	<id>Абсолютная цена опций</id>
+	<version>1.5.3.1</version>
+	<vqmver>2.1.5</vqmver>
+	<author>ulv8888</author>
+    
+    <!--движок-->
+    <file name="system/library/cart.php">
+		<operation>
+			<search position="replace" offset="1"><![CDATA['price'           => ($price + $option_price),]]></search>
+			<add><![CDATA[
+	                    'price'           => (isset($option_price) && $option_price!=0)?$option_price:$price,
+						'total'           => (isset($option_price) && $option_price!=0)?$option_price*$quantity:$price*$quantity,
+                        ]]></add>
+		</operation>
+    </file>
+
+    <!--каталог-->
+    <!--контроллер-->
+ 	<file name="catalog/controller/product/product.php">
+		<operation>
+			<search position="after"><![CDATA[if (!$option_value['subtract'] || ($option_value['quantity'] > 0)) {]]></search>
+			<add><![CDATA[
+            if( $product_info['price'] ) {
+		if (!(float)$product_info['special']) {
+				$option_value['price_full'] = $product_info['price'];
+                if( $option_value['price_prefix'] == "+" )
+                    $option_value['price_full'] = $option_value['price'];
+                if( $option_value['price_prefix'] == "-" )
+                    $option_value['price_full'] = $option_value['price'];
+
+                $option_value['price_full'] = $this->currency->format(
+                    $this->tax->calculate(
+                        $option_value['price_full'],
+                        $product_info['tax_class_id'],
+                        $this->config->get('config_tax')
+                        ));
+		}else{
+		$subtracting = $product_info['price'] - $product_info['special'];
+		$this->data['subtracting'] = $this->currency->format($subtracting);
+		$option_value['price_full'] = $product_info['price'];
+                if( $option_value['price_prefix'] == "+" )
+                    $option_value['price_full'] = $option_value['price'] - $subtracting;
+                if( $option_value['price_prefix'] == "-" )
+                    $option_value['price_full'] = $option_value['price'] - $subtracting;
+
+                $option_value['price_full'] = $this->currency->format(
+                    $this->tax->calculate(
+                        $option_value['price_full'],
+                        $product_info['tax_class_id'],
+                        $this->config->get('config_tax')
+                        ));
+            }
+}
+            ]]></add>
+		</operation>
+		
+		<operation>
+			<search position="after"><![CDATA['price_prefix'            => $option_value['price_prefix']]]></search>
+			<add><![CDATA[,'price_full'              => $option_value['price_full'],]]></add>
+		</operation>
+	</file>
+  <!--view -->
+    <file name="catalog/view/theme/magnetoplan/template/product/product.tpl">
+		<operation>
+        	<search position="replace" index="2"><![CDATA[(<?php echo $option_value['price_prefix']; ?><?php echo $option_value['price']; ?>)]]></search>
+			<add><![CDATA[
+<?php $pricesubstr =  $option_value['price_full']; ?>
+<?php echo preg_replace('/[^0-9]/', '', $pricesubstr); ?>]]></add>
+		</operation>
+	</file>
+
+<!--админка-->
+<!--view-->
+    <file name="admin/view/template/catalog/product_form.tpl">
+		<operation>
+        	<search position="replace" offset="11"><![CDATA[<td class="right"><select name="product_option[<?php echo $option_row; ?>][product_option_value][<?php echo $option_value_row; ?>][price_prefix]">]]></search>
+			<add><![CDATA[<td class="right"><input type="hidden" value="+" name="product_option[<?php echo $option_row; ?>][product_option_value][<?php echo $option_value_row; ?>][price_prefix]">]]></add>
+		</operation>
+		<operation>
+        	<search position="replace" offset="3"><![CDATA[html += '    <td class="right"><select name="product_option[' + option_row + '][product_option_value][' + option_value_row + '][price_prefix]">';]]></search>
+			<add><![CDATA[html += '    <td class="right"><input type="hidden" value="+" name="product_option[' + option_row + '][product_option_value][' + option_value_row + '][price_prefix]">';]]></add>
+		</operation>
+	</file>
+
+</modification>

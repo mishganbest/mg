@@ -1,0 +1,29 @@
+<modification>
+	<id>VQMod Articles</id>
+	<version>1.0.0</version>
+	<vqmver>2.3.0</vqmver>
+	<author>Alex</author>
+	<file name="admin/controller/common/header.php">
+		<operation error="abort">
+			<search position="after"><![CDATA[$this->data['text_information'] = $this->language->get('text_information');]]></search>
+			<add><![CDATA[$this->data['text_article'] = $this->language->get('text_article');]]></add>
+		</operation>
+		<operation error="abort">
+			<search position="after"><![CDATA[$this->data['information'] = $this->url->link('catalog/information', 'token=' . $this->session->data['token'], 'SSL');]]></search>
+			<add><![CDATA[$this->data['article'] = $this->url->link('catalog/article', 'token=' . $this->session->data['token'], 'SSL');]]></add>
+		</operation>
+	</file>
+	<file name="admin/language/*/common/header.php">
+		<operation error="abort">
+			<search position="before"><![CDATA[$_['text_information']]]></search>
+			<add><![CDATA[$_['text_article']                    = 'Информация';
+]]></add>
+		</operation>
+	</file>
+	<file name="admin/view/template/common/header.tpl">
+		<operation error="abort">
+			<search position="after"><![CDATA[<li><a href="<?php echo $information; ?>"><?php echo $text_information; ?></a></li>]]></search>
+			<add><![CDATA[<li><a href="<?php echo $article; ?>"><?php echo $text_article; ?></a></li>]]></add>
+		</operation>
+	</file>
+</modification>
